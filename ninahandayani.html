@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tugas 1</title>
+    <link rel="stylesheet" href="./assets/style.css" />
+  </head>
+  <body>
+    <div class="wrapper">
+      <form class="form-wrapper">
+        <input
+          id="nik"
+          class="input-form"
+          type="number"
+          name="NIK"
+          placeholder="NIK"
+        />
+        <input
+          id="nama_lengkap"
+          class="input-form"
+          type="text"
+          name="Nama Lengkap"
+          placeholder="Nama Lengkap"
+        />
+        <div button="button-group">
+          <a class="button" onclick="handleSubmit(event,'daftar')">Saya Pengguna Baru</a>
+          <button class="button" onclick="handleSubmit(event,'masuk')">masuk</button>
+        </div>
+      </form>
+    </div>
+    <script>
+      function checkLogin() {
+        if (localStorage.getItem("isi_oggedIn") !== null) {
+          window.location.replace("/dashboard.html");
+        }
+      }
+      checkLogin();
+      async function handleSubmit(event,aksi) {
+        event.preventDefault();
+        console.log(aksi);
+
+        //get data nik
+        const nik = document.getElementById("nik").value;
+        //get data  nama lengkap
+        const nama_lengkap = document.getElementById("nama_lengkap").value;
+
+        //logic untuk jika data kosong
+        if(!nik|| !nama_lengkap){
+          return alert("form tidak boleh kosong");
+        }
+        if(nama_lengkap == "riyas"){
+          return alert("nama terblokir");
+        }
+        //handle login
+
+        //method yang dipakai post,post dijavascript itu FORMDATA
+        let formData = new FormData();
+        formData.append("nik",nik);
+        formData.append("nama_lengkap",nama_lengkap);
+        if(aksi === 'daftar'){
+          formData.append("aksi","daftar");
+        }else{
+          formData.append("aksi","login");
+        }
+        // console.log(formData);
+        let object={};
+        formData.forEach((value,key) => (object[key] = value) )//supaya kebaca
+        let json = JSON.stringify(object);
+        console.log(json);
+
+
+        if(aksi === 'daftar'){
+          //panggil api daftar
+          try {
+            //panggil api
+            const response = await fetch('http://localhost:8081', {
+              method : "POST",
+              headers:{
+                "Content-Type" : "application/json",
+              },
+              body: json,
+            });
+            let data = await response.json();
+            console.log(data);
+
+            // alert(data.status);
+            if(data.status == "Berhasil Mendaftar"){
+              alert("Berhasil Mendaftar");
+                localStorage.setItem("isloggedin", data.nik);
+                localStorage.setItem("isiNamaLengkap", data.nama_lengkap);
+                window.location.replace("/dashboard.html");
+            }else{
+              alert("NIK Sudah Terdaftar");
+            }
+          } catch (error) {
+            console.log(error);
+          }
+        }else{
+          //panggil api login
+          try {
+            console.log(json);
+            const response = await fetch('http://localhost:8081', {
+              method: "POST",
+              headers:{
+                "Content-Type": "application/json",
+              },
+              body: json,
+            });
+            let data = await response.json();
+            console.log(data);
+          } catch (error) {
+            console.log(error);
+          }
+        }
+        // if (nik === "123" && nama_lengkap === "Nina Handayani") {
+        //   // alert("login berhasil");
+        //   localStorage.setItem("isi_oggedIn", "admin");
+        //   window.location.replace("/dashboard.html");
+        // } else {
+        //   alert("username atau password salah");
+        // }
+        // console.log("jacascript terload", event);
+      }
+      // handleSubmit();
+    </script>
+  </body>
+</html>
